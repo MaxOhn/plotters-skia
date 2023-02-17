@@ -7,13 +7,15 @@ use plotters_backend::{
     BackendColor, BackendCoord, BackendStyle, DrawingBackend, DrawingErrorKind,
 };
 use skia_safe::{
-    AlphaType, Canvas, Color, ColorType, Data, Image, ImageInfo, Paint, PaintStyle, Path, Rect,
+    AlphaType, BlendMode, Canvas, Color, ColorType, Data, Image, ImageInfo, Paint, PaintStyle,
+    Path, Rect,
 };
 
 pub struct SkiaBackend<'a> {
     canvas: &'a mut Canvas,
     width: u32,
     height: u32,
+    blend_mode: Option<BlendMode>,
 }
 
 #[derive(Debug)]
@@ -36,16 +38,27 @@ impl<'a> SkiaBackend<'a> {
             canvas,
             width: w,
             height: h,
+            blend_mode: None,
         }
     }
 
-    fn paint(color: BackendColor) -> Paint {
+    pub fn set_blend_mode(&mut self, blend_mode: Option<BlendMode>) -> &mut Self {
+        self.blend_mode = blend_mode;
+
+        self
+    }
+
+    fn paint(&self, color: BackendColor) -> Paint {
         let alpha = (color.alpha * 255.0) as u8;
         let (r, g, b) = color.rgb;
         let color = Color::from_argb(alpha, r, g, b);
 
         let mut paint = Paint::default();
         paint.set_color(color);
+
+        if let Some(mode) = self.blend_mode {
+            paint.set_blend_mode(mode);
+        }
 
         paint
     }
@@ -70,7 +83,7 @@ impl<'a> SkiaBackend<'a> {
         style: &S,
         filled: bool,
     ) {
-        let mut paint = Self::paint(style.color());
+        let mut paint = self.paint(style.color());
 
         paint
             .set_stroke_width(style.stroke_width() as f32)
@@ -121,7 +134,7 @@ impl<'a> DrawingBackend for SkiaBackend<'a> {
         point: BackendCoord,
         color: BackendColor,
     ) -> Result<(), DrawingErrorKind<Self::ErrorType>> {
-        self.canvas.draw_point(point, &Self::paint(color));
+        self.canvas.draw_point(point, &self.paint(color));
 
         Ok(())
     }
@@ -133,7 +146,7 @@ impl<'a> DrawingBackend for SkiaBackend<'a> {
         to: BackendCoord,
         style: &S,
     ) -> Result<(), DrawingErrorKind<Self::ErrorType>> {
-        let mut paint = Self::paint(style.color());
+        let mut paint = self.paint(style.color());
 
         paint
             .set_stroke_width(style.stroke_width() as f32)
@@ -151,7 +164,7 @@ impl<'a> DrawingBackend for SkiaBackend<'a> {
         style: &S,
         fill: bool,
     ) -> Result<(), DrawingErrorKind<Self::ErrorType>> {
-        let mut paint = Self::paint(style.color());
+        let mut paint = self.paint(style.color());
 
         paint
             .set_stroke_width(style.stroke_width() as f32)
@@ -192,7 +205,7 @@ impl<'a> DrawingBackend for SkiaBackend<'a> {
         style: &S,
         fill: bool,
     ) -> Result<(), DrawingErrorKind<Self::ErrorType>> {
-        let mut paint = Self::paint(style.color());
+        let mut paint = self.paint(style.color());
 
         paint
             .set_stroke_width(style.stroke_width() as f32)
