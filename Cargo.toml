@@ -1,0 +1,8 @@
+[package]
+name = "plotters-skia"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+plotters-backend = "0.3"
+skia-safe = "0.58.0"
