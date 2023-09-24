@@ -7,7 +7,7 @@ use plotters_backend::{
     BackendColor, BackendCoord, BackendStyle, DrawingBackend, DrawingErrorKind,
 };
 use skia_safe::{
-    AlphaType, BlendMode, Canvas, Color, ColorType, Data, Image, ImageInfo, Paint, PaintStyle,
+    images, AlphaType, BlendMode, Canvas, Color, ColorType, Data, ImageInfo, Paint, PaintStyle,
     Path, Rect,
 };
 
@@ -246,10 +246,11 @@ impl<'a> DrawingBackend for SkiaBackend<'a> {
             None,
         );
 
-        let pixels = Data::new_copy(src);
+        // SAFETY: `src` outlives `data`
+        let data = unsafe { Data::new_bytes(src) };
         let row_bytes = iw * 4;
 
-        let img = Image::from_raster_data(&info, pixels, row_bytes as usize)
+        let img = images::raster_from_data(&info, data, row_bytes as usize)
             .ok_or(DrawingErrorKind::DrawingError(SkiaError::ImageFromRaster))?;
 
         self.canvas.draw_image(img, pos, None);
