@@ -12,7 +12,7 @@ use skia_safe::{
 };
 
 pub struct SkiaBackend<'a> {
-    canvas: &'a mut Canvas,
+    canvas: &'a Canvas,
     width: u32,
     height: u32,
     blend_mode: Option<BlendMode>,
@@ -33,7 +33,7 @@ impl Display for SkiaError {
 impl StdError for SkiaError {}
 
 impl<'a> SkiaBackend<'a> {
-    pub fn new(canvas: &'a mut Canvas, w: u32, h: u32) -> Self {
+    pub fn new(canvas: &'a Canvas, w: u32, h: u32) -> Self {
         Self {
             canvas,
             width: w,
