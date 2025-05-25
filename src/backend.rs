@@ -242,7 +242,7 @@ impl<'a> DrawingBackend for SkiaBackend<'a> {
             (iw as i32, ih as i32),
             // Data has to be provided as an RGBA image buffer
             ColorType::RGBA8888,
-            AlphaType::Opaque,
+            AlphaType::Unpremul,
             None,
         );
 
